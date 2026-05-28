@@ -7,7 +7,7 @@
 *   **Matière :** Intelligence Artificielle & Deep Learning (Python)
 *   **Sujet du TP :** Classification de la base d'images CIFAR-10 à l'aide d'un réseau de neurones convolutif
 *   **Technologie :** TensorFlow / Keras, NumPy, Scikit-Learn, Matplotlib, Seaborn
-*   **Auteur :** Antigravity & Hamza
+*   **Auteurs :** EZ-ZOUEK HAMZA / MOSLIH SOUFIAN / BADRI WISSAL / BENCHAABOUN HAJAR
 *   **Date :** Mai 2026
 
 ---

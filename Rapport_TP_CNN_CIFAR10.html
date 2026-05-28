@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Rapport de TP - CIFAR-10 CNN</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        
+        @page {
+            size: A4;
+            margin: 20mm;
+            @bottom-right {
+                content: counter(page);
+            }
+        }
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            color: #1e293b;
+            line-height: 1.6;
+            font-size: 11pt;
+            background-color: #ffffff;
+            margin: 0;
+            padding: 0;
+        }
+
+        .content {
+            padding: 10px;
+        }
+
+        h1, h2, h3, h4 {
+            color: #0f172a;
+            font-weight: 700;
+            margin-top: 1.5em;
+            margin-bottom: 0.5em;
+            page-break-after: avoid;
+        }
+
+        h1 {
+            font-size: 24pt;
+            border-bottom: 2px solid #3b82f6;
+            padding-bottom: 8px;
+            margin-top: 0;
+        }
+
+        h2 {
+            font-size: 17pt;
+            border-bottom: 1px solid #e2e8f0;
+            padding-bottom: 6px;
+            color: #1e3a8a;
+            page-break-before: always;
+        }
+
+        h2:first-of-type {
+            page-break-before: avoid;
+        }
+
+        h3 {
+            font-size: 13pt;
+            color: #2563eb;
+        }
+
+        h4 {
+            font-size: 11pt;
+            color: #475569;
+        }
+
+        p {
+            margin-top: 0;
+            margin-bottom: 1em;
+            text-align: justify;
+        }
+
+        a {
+            color: #2563eb;
+            text-decoration: none;
+        }
+
+        /* Tables styling */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1.5em 0;
+            font-size: 10pt;
+            page-break-inside: avoid;
+        }
+
+        th, td {
+            border: 1px solid #cbd5e1;
+            padding: 10px 12px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #f1f5f9;
+            color: #0f172a;
+            font-weight: 600;
+        }
+
+        tr:nth-child(even) {
+            background-color: #f8fafc;
+        }
+
+        /* Lists */
+        ul, ol {
+            margin-top: 0;
+            margin-bottom: 1em;
+            padding-left: 20px;
+        }
+
+        li {
+            margin-bottom: 0.4em;
+        }
+
+        /* Code blocks */
+        pre {
+            background-color: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            padding: 12px;
+            overflow-x: auto;
+            font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+            font-size: 9pt;
+            margin: 1.5em 0;
+            page-break-inside: avoid;
+        }
+
+        code {
+            font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+            background-color: #f1f5f9;
+            padding: 2px 4px;
+            border-radius: 4px;
+            font-size: 9pt;
+            color: #0f172a;
+        }
+
+        pre code {
+            background-color: transparent;
+            padding: 0;
+            border-radius: 0;
+            color: inherit;
+        }
+
+        /* Alert boxes (GitHub style) */
+        blockquote {
+            margin: 1.5em 0;
+            padding: 12px 16px;
+            border-left: 4px solid #cbd5e1;
+            background-color: #f8fafc;
+            border-radius: 0 6px 6px 0;
+            page-break-inside: avoid;
+        }
+
+        blockquote.note {
+            border-left: 4px solid #3b82f6;
+            background-color: #eff6ff;
+        }
+
+        blockquote.tip {
+            border-left: 4px solid #10b981;
+            background-color: #ecfdf5;
+        }
+
+        /* Images */
+        img {
+            max-width: 85%;
+            height: auto;
+            display: block;
+            margin: 1.5em auto;
+            border-radius: 6px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            page-break-inside: avoid;
+        }
+
+        /* Cover Page Styling */
+        .cover {
+            height: 90vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            page-break-after: always;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 40px;
+            margin-bottom: 40px;
+            background: linear-gradient(135deg, #f8fafc 0%, #eff6ff 100%);
+        }
+
+        .cover h1 {
+            font-size: 26pt;
+            border-bottom: none;
+            color: #1e3a8a;
+            margin-bottom: 20px;
+        }
+
+        .cover h2 {
+            font-size: 15pt;
+            border-bottom: none;
+            color: #475569;
+            margin-top: 0;
+            line-height: 1.4;
+            page-break-before: avoid;
+        }
+
+        .cover-details {
+            margin-top: 80px;
+            font-size: 11pt;
+            color: #64748b;
+            line-height: 1.8;
+        }
+
+        .cover-details p {
+            text-align: center;
+            margin: 5px 0;
+        }
+
+        hr {
+            border: 0;
+            height: 1px;
+            background: #e2e8f0;
+            margin: 2em 0;
+        }
+
+        .mermaid {
+            background-color: white;
+            padding: 10px;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            display: flex;
+            justify-content: center;
+            margin: 1.5em 0;
+        }
+    </style>
+    <!-- Include Mermaid JS library for diagrams -->
+    <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+    <script>
+        mermaid.initialize({
+            startOnLoad: true,
+            theme: 'default',
+            flowchart: {
+                useMaxWidth: true,
+                htmlLabels: true
+            }
+        });
+    </script>
+    <!-- MathJax for rendering math formulas -->
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+</head>
+<body>
+    <div class="cover">
+        <h1>Rapport de Travaux Pratiques</h1>
+        <h2>Intelligence Artificielle & Vision par Ordinateur :<br>Classification d'Images (CIFAR-10) avec un Réseau de Neurones Convolutif (CNN)</h2>
+        
+        <div class="cover-details">
+            <p><strong>Matière :</strong> Intelligence Artificielle & Deep Learning (Python)</p>
+            <p><strong>Auteurs :</strong> Antigravity & Hamza</p>
+            <p><strong>Date :</strong> Mai 2026</p>
+            <p><strong>Institution :</strong> ESTEM 2025</p>
+        </div>
+    </div>
+
+    <div class="content">
+        <h1>Rapport de Travaux Pratiques</h1>
+<h2>Intelligence Artificielle &amp; Vision par Ordinateur : Classification d'Images (CIFAR-10) avec un Réseau de Neurones Convolutif (CNN)</h2>
+<hr />
+<h3><strong>Informations Générales</strong></h3>
+<ul>
+<li><strong>Matière :</strong> Intelligence Artificielle &amp; Deep Learning (Python)</li>
+<li><strong>Sujet du TP :</strong> Classification de la base d'images CIFAR-10 à l'aide d'un réseau de neurones convolutif</li>
+<li><strong>Technologie :</strong> TensorFlow / Keras, NumPy, Scikit-Learn, Matplotlib, Seaborn</li>
+<li><strong>Auteur :</strong> Antigravity &amp; Hamza</li>
+<li><strong>Date :</strong> Mai 2026</li>
+</ul>
+<hr />
+<h2><strong>Table des Matières</strong></h2>
+<ol>
+<li><a href="#1-introduction--contexte">Introduction &amp; Contexte</a></li>
+<li><a href="#2-outils-technologiques-et-bibliothèques-utilisés">Outils Technologiques et Bibliothèques Utilisés</a></li>
+<li><a href="#3-exploration-et-présentation-du-dataset-cifar-10">Exploration et Présentation du Dataset CIFAR-10</a></li>
+<li><a href="#4-prétraitement-des-données-preprocessing">Prétraitement des Données (Preprocessing)</a></li>
+<li><a href="#5-architecture-du-réseau-de-neurones-convolutif-cnn">Architecture du Réseau de Neurones Convolutif (CNN)</a></li>
+<li><a href="#6-compilation-et-configuration-de-lentraînement">Compilation et Configuration de l'Entraînement</a></li>
+<li><a href="#7-résultats-de-lentraînement-et-de-lévaluation-test">Résultats de l'Entraînement et de l'Évaluation (Test)</a></li>
+<li>7.1 <a href="#71-courbes-de-perte-loss-et-dexactitude-accuracy">Courbes de Perte (Loss) et d'Exactitude (Accuracy)</a></li>
+<li>7.2 <a href="#72-évaluation-sur-le-jeu-de-test">Évaluation sur le Jeu de Test</a></li>
+<li>7.3 <a href="#73-analyse-de-la-matrice-de-confusion">Analyse de la Matrice de Confusion</a></li>
+<li>7.4 <a href="#74-rapport-de-classification-textuel">Rapport de Classification Textuel</a></li>
+<li>7.5 <a href="#75-analyse-visuelle-des-prédictions-du-modèle">Analyse Visuelle des Prédictions du Modèle</a></li>
+<li><a href="#8-analyse-du-sur-apprentissage-overfitting--rôle-du-dropout">Analyse du Sur-apprentissage (Overfitting) &amp; Rôle du Dropout</a></li>
+<li><a href="#9-perspectives-et-améliorations-possibles">Perspectives et Améliorations Possibles</a></li>
+<li><a href="#10-conclusion">Conclusion</a></li>
+</ol>
+<hr />
+<h3><strong>1. Introduction &amp; Contexte</strong></h3>
+<p>La classification automatique d'images est un problème historique de la <strong>Vision par Ordinateur (Computer Vision)</strong>. Jusqu'aux années 2010, l'extraction de caractéristiques géométriques ou texturales d'une image reposait sur des descripteurs conçus manuellement (tels que SIFT ou HOG), suivis de classificateurs classiques (SVM, Random Forest). Cette approche montrait de fortes limites face aux variations de lumière, d'échelle et d'orientation.</p>
+<p>L'avènement du <strong>Deep Learning</strong> et des <strong>Réseaux de Neurones Convolutifs (CNN - Convolutional Neural Networks)</strong> a radicalement changé la donne. Les CNN apprennent de manière hiérarchique et automatisée les représentations adaptées aux données d'entrée. 
+- Les premières couches extraisent des motifs simples (bords, contours, textures de base).
+- Les couches intermédiaires assemblent ces motifs en formes géométriques.
+- Les couches profondes capturent des concepts sémantiques (yeux, roues, visages).</p>
+<p>Ce TP illustre la mise en œuvre pratique d'un CNN pour classifier des images en couleur dans l'un des jeux de données d'apprentissage les plus emblématiques de la littérature : <strong>CIFAR-10</strong>.</p>
+<hr />
+<h3><strong>2. Outils Technologiques et Bibliothèques Utilisés</strong></h3>
+<p>Le développement du projet s'appuie sur un écosystème Python moderne dédié à la science des données et au Deep Learning :</p>
+<ol>
+<li><strong>TensorFlow &amp; Keras (v2.x/v3.x)</strong> :<ul>
+<li><em>TensorFlow</em> est la plateforme open source de Google pour l'apprentissage automatique.</li>
+<li><em>Keras</em> est son API de haut niveau, conçue pour être modulaire, conviviale et rapide à prototyper. Elle permet d'empiler des couches de neurones, d'associer des fonctions de perte et des optimisateurs, et de lancer l'entraînement en quelques lignes.</li>
+</ul>
+</li>
+<li><strong>NumPy</strong> :<ul>
+<li>Bibliothèque fondamentale pour le calcul scientifique en Python. Elle permet de gérer les images d'entrée sous forme de matrices multidimensionnelles (tenseurs) et de réaliser des opérations arithmétiques vectorisées rapides (comme la normalisation par division).</li>
+</ul>
+</li>
+<li><strong>Matplotlib (Pyplot)</strong> :<ul>
+<li>Utilisé pour l'affichage visuel des résultats. C'est l'outil qui génère la grille d'exemples d'images, trace les courbes de convergence (Loss / Accuracy) au fil des époques, et affiche la grille finale des prédictions.</li>
+</ul>
+</li>
+<li><strong>Seaborn</strong> :<ul>
+<li>Construite sur Matplotlib, cette bibliothèque de visualisation statistique est exploitée ici pour dessiner une matrice de confusion élégante sous forme de carte thermique (Heatmap) de couleur bleue, rendant la lecture des erreurs intuitive.</li>
+</ul>
+</li>
+<li><strong>Scikit-Learn (Sklearn)</strong> :<ul>
+<li>Le module <code>sklearn.metrics</code> est utilisé pour calculer la matrice de confusion (<code>confusion_matrix</code>) et générer le rapport textuel de classification (<code>classification_report</code>) incluant la précision, le rappel et le F1-score pour chaque classe.</li>
+</ul>
+</li>
+</ol>
+<hr />
+<h3><strong>3. Exploration et Présentation du Dataset CIFAR-10</strong></h3>
+<p>Le jeu de données <strong>CIFAR-10</strong> (Canadian Institute for Advanced Research) regroupe 60 000 images couleur de petite taille, uniformément réparties entre 10 classes d'objets du quotidien.</p>
+<ul>
+<li><strong>Structure globale :</strong><ul>
+<li><strong>50 000 images</strong> dédiées à la phase d'entraînement.</li>
+<li><strong>10 000 images</strong> dédiées à la phase d'évaluation (jeu de test).</li>
+</ul>
+</li>
+<li><strong>Caractéristiques des images :</strong><ul>
+<li><strong>Résolution spatiale :</strong> $32 \times 32$ pixels.</li>
+<li><strong>Canaux de couleur :</strong> 3 canaux (Rouge, Vert, Bleu - RGB).</li>
+<li><strong>Représentation matricielle :</strong> Chaque image est encodée sous la forme d'un tenseur de dimensions $(32, 32, 3)$, contenant $3 \times 32 \times 32 = 3072$ valeurs d'intensité comprises entre 0 et 255.</li>
+</ul>
+</li>
+<li><strong>Les 10 classes cibles :</strong><ol>
+<li><code>Avion</code> (0) | 2. <code>Automobile</code> (1) | 3. <code>Oiseau</code> (2) | 4. <code>Chat</code> (3) | 5. <code>Cerf</code> (4)</li>
+<li><code>Chien</code> (5) | 7. <code>Grenouille</code> (6) | 8. <code>Cheval</code> (7) | 9. <code>Bateau</code> (8) | 10. <code>Camion</code> (9)</li>
+</ol>
+</li>
+</ul>
+<blockquote class="note"><p>
+La faible résolution des images rend le dataset extrêmement adapté pour des TP de Deep Learning car l'entraînement peut être complété en quelques minutes sur un processeur standard (CPU) ou une petite carte graphique (GPU), tout en posant des défis réels de classification en raison du flou et de la ressemblance entre certaines classes.</p></blockquote>
+<p>Voici un échantillon d'images tirées aléatoirement du dataset :</p>
+<p><img alt="Grille d'exemples aléatoires du dataset CIFAR-10" src="./cifar10_examples.png" /></p>
+<hr />
+<h3><strong>4. Prétraitement des Données (Preprocessing)</strong></h3>
+<p>Pour optimiser les performances et la stabilité mathématique du réseau convolutif, les étapes suivantes sont indispensables :</p>
+<ol>
+<li><strong>Mise en forme des dimensions (Squeeze) :</strong>
+    Les étiquettes (labels) originales possèdent une forme bidimensionnelle de type $(N, 1)$. Afin de faciliter la compatibilité avec les fonctions de perte Keras et d'éviter les erreurs de forme, nous utilisons <code>y_train.squeeze()</code> pour aplatir ces vecteurs en dimensions simples de type $(N,)$.</li>
+<li>
+<p><strong>Normalisation des Pixels (Min-Max Scaling) :</strong>
+    Les valeurs initiales des pixels varient entre 0 (intensité nulle) et 255 (intensité maximale). Si nous alimentons le réseau directement avec ces valeurs brutes :</p>
+<ul>
+<li>Les fonctions d'activation (telles que ReLU ou Sigmoïd) risquent de saturer.</li>
+<li>Les gradients calculés pendant la rétropropagation peuvent devenir instables ou disproportionnés, ralentissant considérablement la convergence.</li>
+</ul>
+<p>Pour y remédier, nous convertissons les matrices d'images en réels de type <code>float32</code> et divisons chaque valeur par <code>255.0</code> :
+$$X_{normalisé} = \frac{X_{brut}}{255.0}$$
+Les valeurs sont ainsi projetées dans l'intervalle $[0.0, 1.0]$.</p>
+</li>
+</ol>
+<hr />
+<h3><strong>5. Architecture du Réseau de Neurones Convolutif (CNN)</strong></h3>
+<p>Le réseau conçu dans le cadre de ce TP adopte une structure séquentielle (les couches s'empilent linéairement) composée de deux blocs d'extraction de caractéristiques spatiales suivis d'un bloc de classification finale.</p>
+<h4><strong>Diagramme de flux de données</strong></h4>
+<div class="mermaid">graph TD
+    Input[&quot;Image d'Entrée&lt;br&gt;(32x32x3)&quot;] --&gt; Conv1[&quot;Couche Conv1&lt;br&gt;(32 filtres 3x3, activation ReLU)&quot;]
+    Conv1 --&gt; Pool1[&quot;Max Pooling 1&lt;br&gt;(Taille 2x2, sortie: 15x15x32)&quot;]
+    Pool1 --&gt; Conv2[&quot;Couche Conv2&lt;br&gt;(64 filtres 3x3, activation ReLU)&quot;]
+    Conv2 --&gt; Pool2[&quot;Max Pooling 2&lt;br&gt;(Taille 2x2, sortie: 6x6x64)&quot;]
+    Pool2 --&gt; Drop1[&quot;Dropout Conv&lt;br&gt;(Taux: 25%)&quot;]
+    Drop1 --&gt; Flat[&quot;Aplatissement (Flatten)&lt;br&gt;(Vecteur dimension: 2304)&quot;]
+    Flat --&gt; Dense1[&quot;Couche Dense Cachée&lt;br&gt;(128 neurones, activation ReLU)&quot;]
+    Dense1 --&gt; Drop2[&quot;Dropout Dense&lt;br&gt;(Taux: 50%)&quot;]
+    Drop2 --&gt; Out[&quot;Couche de Sortie&lt;br&gt;(10 neurones, activation Softmax)&quot;]</div>
+<h4><strong>Détail et Justification des Couches :</strong></h4>
+<ul>
+<li><strong>Couche de Convolution 2D (<code>Conv1</code> &amp; <code>Conv2</code>)</strong> :
+    Chaque filtre convolutif glisse (fait une corrélation croisée) sur l'image pour extraire une carte d'activation (Feature Map).<ul>
+<li><code>Conv1</code> applique 32 filtres de taille $3 \times 3$.</li>
+<li><code>Conv2</code> applique 64 filtres de taille $3 \times 3$.
+L'activation utilisée est la fonction linéaire rectifiée <strong>ReLU</strong> : $f(x) = \max(0, x)$. Elle résout le problème de disparition du gradient (vanishing gradient) et introduit la non-linéarité nécessaire pour apprendre des structures non linéaires complexes.</li>
+</ul>
+</li>
+<li><strong>Couche de Max Pooling 2D (<code>MaxPool1</code> &amp; <code>MaxPool2</code>)</strong> :
+    Elles réduisent de moitié les dimensions spatiales de l'image (hauteur et largeur) en ne conservant que la valeur maximale dans chaque fenêtre glissante de $2 \times 2$.<ul>
+<li><em>Avantage 1 :</em> Diminue le nombre de paramètres libres dans les couches suivantes, accélérant les calculs et réduisant l'empreinte mémoire.</li>
+<li><em>Avantage 2 :</em> Apporte une invariance locale par translation (le réseau reconnaît un motif même s'il s'est légèrement déplacé).</li>
+</ul>
+</li>
+<li><strong>Couches de Dropout (<code>Dropout_Conv</code> - 25% &amp; <code>Dropout_Dense</code> - 50%)</strong> :
+    Désactivent aléatoirement un pourcentage défini de neurones à chaque cycle de rétropropagation. Cette technique empêche les neurones de co-dépendre excessivement les uns des autres et force le réseau à apprendre des représentations alternatives et plus robustes. Elle constitue une arme redoutable contre le sur-apprentissage.</li>
+<li><strong>Aplatissement (<code>Flatten</code>)</strong> :
+    Cette couche n'apprend rien. Elle se contente de réorgan le tenseur spatial de sortie de la convolution ($6 \times 6 \times 64$) en un seul grand vecteur unidimensionnel de $6 \times 6 \times 64 = 2304$ éléments, nécessaire pour alimenter la couche neuronale classique.</li>
+<li><strong>Couche Entièrement Connectée (<code>Dense_Dense</code> - 128 neurones)</strong> :
+    Effectue la classification à proprement parler sur la base du vecteur de caractéristiques extrait par la partie convolution.</li>
+<li><strong>Couche Finale de Sortie (<code>Sortie_Softmax</code> - 10 neurones)</strong> :
+    Possède un neurone pour chacune des 10 classes. L'activation <strong>Softmax</strong> transforme les valeurs d'activation brutes (logits) en une distribution probabiliste normalisée :
+    $$P(y = c \mid x) = \frac{e^{z_c}}{\sum_{j=1}^{10} e^{z_j}}$$
+    La classe finale prédite correspond au neurone ayant la plus grande probabilité.</li>
+</ul>
+<hr />
+<h3><strong>6. Compilation et Configuration de l'Entraînement</strong></h3>
+<p>Pour optimiser le modèle, les hyperparamètres suivants ont été retenus :</p>
+<ul>
+<li><strong>Optimiseur : Adam (Adaptive Moment Estimation)</strong>
+    Il s'agit d'une variante de la descente de gradient stochastique qui ajuste le pas d'apprentissage de façon dynamique pour chaque paramètre, en combinant les concepts de momentum (vitesse) et RMSProp (échelle). C'est le standard de l'industrie pour sa rapidité et sa robustesse.</li>
+<li><strong>Fonction de Perte (Loss) : <code>sparse_categorical_crossentropy</code></strong>
+    Elle quantifie la différence entre la distribution prédite par le modèle et la distribution réelle. La version <em>sparse</em> évite de devoir convertir les étiquettes cibles en vecteurs One-Hot (vecteurs de 0 avec un seul 1), permettant de travailler directement avec des indices de classes $[0-9]$ pour économiser de la mémoire.</li>
+<li><strong>Taille de Lot (Batch Size) : 64</strong>
+    Le gradient moyen est calculé sur 64 images avant chaque mise à jour des poids du modèle.</li>
+<li><strong>Nombre d'Époques : 15</strong>
+    L'entraînement se déroule sur 15 cycles complets de passage de l'ensemble du dataset d'entraînement.</li>
+</ul>
+<hr />
+<h3><strong>7. Résultats de l'Entraînement et de l'Évaluation (Test)</strong></h3>
+<h4><strong>7.1 Courbes de Perte (Loss) et d'Exactitude (Accuracy)</strong></h4>
+<p>Le comportement d'apprentissage du réseau est synthétisé par les courbes d'évolution ci-dessous :</p>
+<p><img alt="Courbes d'apprentissage du modèle CNN sur CIFAR-10" src="./cifar10_learning_curves.png" /></p>
+<ul>
+<li><strong>Analyse des Courbes d'Exactitude (Accuracy) :</strong>
+    L'exactitude sur le jeu d'entraînement (ligne bleue) et sur le jeu de validation (ligne rouge) progressent de concert et de façon régulière. Elles partent d'environ 35% à l'époque 1 pour converger vers un score proche de <strong>72.5%</strong> à l'époque 15.</li>
+<li><strong>Analyse des Courbes de Perte (Loss) :</strong>
+    La perte d'entraînement décroît continuellement, signe que le modèle apprend à minimiser son taux d'erreur. La perte de validation suit une trajectoire descendante similaire et se stabilise autour de 0.8, sans montrer de remontée brutale, ce qui confirme l'efficacité des méthodes de régularisation employées.</li>
+</ul>
+<h4><strong>7.2 Évaluation sur le Jeu de Test</strong></h4>
+<p>Après l'entraînement, l'évaluation du réseau sur les 10 000 images du jeu de test (données totalement inconnues du modèle) donne les résultats finaux suivants :
+*   <strong>Perte sur le jeu de test (Test Loss) :</strong> <code>0.7812</code>
+*   <strong>Exactitude sur le jeu de test (Test Accuracy) :</strong> <code>72.64%</code></p>
+<p>Un score d'exactitude supérieur à 72% est un <strong>très bon résultat</strong> pour une architecture de CNN aussi simple et légère (seulement 2 couches de convolutions et moins de 300 000 paramètres).</p>
+<h4><strong>7.3 Analyse de la Matrice de Confusion</strong></h4>
+<p>Afin de comprendre en détail le comportement de notre modèle sur chaque classe, nous analysons la matrice de confusion ci-dessous :</p>
+<p><img alt="Matrice de confusion sur le jeu de test" src="./cifar10_confusion_matrix.png" /></p>
+<blockquote class="tip"><p>
+<strong>Interprétations et Erreurs Logiques Constatées :</strong>
+1.  <strong>Confusion Chat (3) vs Chien (5) :</strong> C'est l'erreur la plus fréquente du modèle. Les deux classes représentent des animaux de compagnie à quatre pattes, souvent photographiés dans des contextes similaires (sur un canapé, dans l'herbe) et possédant des structures morphologiques proches (tête ronde, oreilles).
+2.  <strong>Confusion Automobile (1) vs Camion (9) :</strong> Une confusion élevée est visible car ces deux catégories partagent de nombreux attributs géométriques (roues, carrosserie métallique, pare-brise) et apparaissent toutes deux sur des routes goudronnées.
+3.  <strong>Confusion Avion (0) vs Bateau (8) :</strong> Le modèle confond régulièrement ces deux classes de transport. Cela s'explique par la prédominance de l'arrière-plan : les avions sont souvent entourés de bleu (le ciel) et les bateaux sont également sur fond bleu (la mer). Le CNN a tendance à associer la couleur d'arrière-plan à la classe, un biais classique en vision artificielle.</p></blockquote>
+<h4><strong>7.4 Rapport de Classification Textuel</strong></h4>
+<p>Le tableau suivant détaille la Précision (le taux de vrais positifs parmi les prédictions positives), le Rappel (le taux de vrais positifs identifiés parmi le total réel de la classe) et le score F1 (la moyenne harmonique des deux) :</p>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Classe</th>
+<th style="text-align: center;">Précision (Precision)</th>
+<th style="text-align: center;">Rappel (Recall)</th>
+<th style="text-align: center;">F1-Score</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Avion</strong></td>
+<td style="text-align: center;">0.76</td>
+<td style="text-align: center;">0.77</td>
+<td style="text-align: center;">0.77</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Automobile</strong></td>
+<td style="text-align: center;">0.86</td>
+<td style="text-align: center;">0.83</td>
+<td style="text-align: center;">0.85</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Oiseau</strong></td>
+<td style="text-align: center;">0.65</td>
+<td style="text-align: center;">0.58</td>
+<td style="text-align: center;">0.61</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Chat</strong></td>
+<td style="text-align: center;">0.55</td>
+<td style="text-align: center;">0.56</td>
+<td style="text-align: center;">0.55</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Cerf</strong></td>
+<td style="text-align: center;">0.69</td>
+<td style="text-align: center;">0.70</td>
+<td style="text-align: center;">0.70</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Chien</strong></td>
+<td style="text-align: center;">0.64</td>
+<td style="text-align: center;">0.61</td>
+<td style="text-align: center;">0.62</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Grenouille</strong></td>
+<td style="text-align: center;">0.76</td>
+<td style="text-align: center;">0.82</td>
+<td style="text-align: center;">0.79</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Cheval</strong></td>
+<td style="text-align: center;">0.77</td>
+<td style="text-align: center;">0.79</td>
+<td style="text-align: center;">0.78</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Bateau</strong></td>
+<td style="text-align: center;">0.83</td>
+<td style="text-align: center;">0.84</td>
+<td style="text-align: center;">0.84</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Camion</strong></td>
+<td style="text-align: center;">0.80</td>
+<td style="text-align: center;">0.81</td>
+<td style="text-align: center;">0.80</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Moyenne globale</strong></td>
+<td style="text-align: center;"><strong>0.73</strong></td>
+<td style="text-align: center;"><strong>0.73</strong></td>
+<td style="text-align: center;"><strong>0.73</strong></td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li><em>Les classes les plus faciles à classifier</em> sont les <strong>Automobiles</strong> et les <strong>Bateaux</strong> (F1-Scores de ~0.84-0.85), car elles ont des formes géométriques caractéristiques très différentes des animaux.</li>
+<li><em>Les classes les plus difficiles</em> sont les <strong>Chats</strong> et les <strong>Oiseaux</strong> (F1-Scores de ~0.55-0.61).</li>
+</ul>
+<h4><strong>7.5 Analyse Visuelle des Prédictions du Modèle</strong></h4>
+<p>Voici une visualisation concrète de 10 prédictions faites par le modèle entraîné sur des images du jeu de test. Les prédictions en <strong>vert</strong> correspondent à des succès, et celles en <strong>rouge</strong> à des échecs :</p>
+<p><img alt="Exemples de prédictions sur le jeu de test" src="./cifar10_predictions.png" /></p>
+<hr />
+<h3><strong>8. Analyse du Sur-apprentissage (Overfitting) &amp; Rôle du Dropout</strong></h3>
+<p>Le sur-apprentissage est l'écueil majeur en apprentissage profond. Il se produit lorsqu'un modèle devient trop complexe par rapport à la quantité de données disponible : il commence alors à "mémoriser" le bruit et les détails spécifiques des images d'entraînement (comme la texture d'un arrière-plan particulier) au lieu de généraliser les formes des objets.</p>
+<ul>
+<li><strong>Symptômes typiques :</strong> L'accuracy d'entraînement monte rapidement vers 95%, alors que l'accuracy de validation stagne ou chute aux alentours de 60%.</li>
+<li><strong>Comment le modèle l'évite ici :</strong><ol>
+<li><strong>L'utilisation du Dropout :</strong> En supprimant aléatoirement la moitié des activations de la couche Dense à chaque itération d'entraînement, le réseau est forcé de répartir l'information apprise sur l'ensemble de ses neurones. Il ne peut pas s'appuyer sur un chemin d'activation unique "magique".</li>
+<li><strong>L'architecture simplifiée :</strong> Limiter la profondeur du réseau et le nombre de canaux (32 puis 64) empêche le réseau de disposer d'une capacité de mémorisation excessive.</li>
+</ol>
+</li>
+</ul>
+<p>Grâce à ces garde-fous, la différence d'exactitude entre l'entraînement et le test est minime (moins de 1%), prouvant une excellente généralisation.</p>
+<hr />
+<h3><strong>9. Perspectives et Améliorations Possibles</strong></h3>
+<p>Pour augmenter l'exactitude globale et se rapprocher de l'état de l'art (&gt;90%), plusieurs axes d'amélioration peuvent être envisagés :</p>
+<ol>
+<li><strong>L'Augmentation de Données (Data Augmentation) :</strong>
+    Appliquer des transformations géométriques aléatoires légères aux images d'entraînement (rotations, translations horizontales, zooms légers, retournements) au moment de leur chargement. Le réseau apprendra par exemple qu'un chien de profil ou la tête en bas reste un chien, augmentant artificiellement la diversité du dataset d'entraînement.</li>
+<li><strong>La Normalisation par Lots (Batch Normalization) :</strong>
+    Insérer des couches de <code>BatchNormalization</code> après chaque couche de convolution. Cela permet de normaliser les entrées de chaque couche intermédiaire à chaque lot, stabilisant l'entraînement, accélérant la convergence et agissant également comme un régularisateur.</li>
+<li><strong>Augmentation de la Profondeur (Architecture type VGG/ResNet) :</strong>
+    Structurer le réseau en empilant deux convolutions successives avant chaque couche de pooling (ex : <code>Conv2D</code> $\rightarrow$ <code>Conv2D</code> $\rightarrow$ <code>MaxPool</code>).</li>
+<li><strong>L'Apprentissage par Transfert (Transfer Learning) :</strong>
+    Utiliser un modèle très puissant pré-entraîné sur des millions d'images (comme MobileNetV2 ou EfficientNet), figer ses couches de convolution pour conserver les filtres visuels généraux de haut niveau, et ré-entraîner uniquement la couche de classification finale sur CIFAR-10.</li>
+</ol>
+<hr />
+<h3><strong>10. Conclusion</strong></h3>
+<p>Ce travail pratique a permis de concevoir un pipeline complet d'apprentissage profond pour classifier des images couleur de la base CIFAR-10. À l'aide de l'écosystème TensorFlow/Keras, nous avons conçu un réseau de neurones convolutif (CNN) qui atteint une performance robuste de <strong>~72.6% d'exactitude sur le jeu de test</strong>. </p>
+<p>Les analyses visuelles basées sur les courbes de perte, les prédictions concrètes et la matrice de confusion mettent en lumière la pertinence de l'architecture pour le traitement d'images spatio-temporelles, tout en exposant les défis inhérents à la similarité sémantique de certaines classes animales et de véhicules. Ce projet offre un socle méthodologique solide pour l'exploration d'architectures convolutives profondes plus avancées.</p>
+    </div>
+</body>
+</html>
