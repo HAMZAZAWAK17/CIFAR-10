@@ -7,7 +7,7 @@ en Deep Learning. Il détaille chaque étape du pipeline de machine learning :
 chargement, exploration, prétraitement, architecture, entraînement, évaluation
 et analyse des performances d'un Réseau de Neurones Convolutif (CNN).
 
-Auteur: Antigravity (Assistant IA Google DeepMind)
+Auteurs: EZ-ZOUEK HAMZA / MOSLIH SOUFIAN / BADRI WISSAL / BENCHAABOUN HAJAR
 Date: Mai 2026
 """
 
